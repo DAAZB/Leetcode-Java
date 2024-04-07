@@ -1,0 +1,9 @@
+{
+    "java.project.sourcePaths": ["src"],
+    "java.project.outputPath": "bin",
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "d:\\Users\\user\\Desktop\\Learn\\Java\\commons-io-2.13.0\\commons-io-2.13.0.jar"
+    ],
+    "java.dependency.packagePresentation": "flat"
+}
