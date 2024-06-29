@@ -21,6 +21,9 @@ import javax.naming.ldap.LdapContext;
 
 public class leetcode {
     public static void main(String[] args) throws Exception {
+        
+        leetcode lc = new leetcode();
+
         // int[] nums = {18,15,13,7,5,26,25,29};
         // System.out.println(minCost(30, nums));
         // int[] rains = {1,2,0,0,2,1};
@@ -105,9 +108,31 @@ public class leetcode {
         // System.out.println(maxMoves(data));
 
 
-        int[] coins = {1,2,5};
-        System.out.println(change(5, coins));
+        // int[] coins = {1,2,5};
+        // System.out.println(change(5, coins));
 
+        // System.out.println(maximumBinaryString("000110"));
+
+        // int[] changed = {3,3,3,3};
+        // System.out.println(findOriginalArray(changed));
+
+        // System.out.println(combinationSum3(9, 45));
+
+        // lc.LC1673();
+
+        // System.out.println(2 ^ 1);
+
+
+        // char[][] board = {{'X','.','.','X'},{'.','.','.','X'},{'.','.','.','X'}};
+        // lc.countBattleships(board);
+
+        // int[] people = {3,2,2,1};
+        // lc.numRescueBoats(people, 3);
+
+
+        var s = lc.discountPrices("706hzu76jjh7yufr5x9ot60v149k5 $7651913186 pw2o $6", 28);
+        System.out.println(s);
+        System.out.println(Integer.MAX_VALUE);
     }
 
     public static int searchInsert(int[] nums, int target) {
@@ -1398,6 +1423,336 @@ public class leetcode {
             }
         }
         return sb.toString();
+    }
+
+
+    // LC 2009
+    public int minOperations(int[] nums) {
+        Arrays.sort(nums);
+        int n = nums.length;
+        int j = 1;
+        for(int i = 1; i < n; i++){
+            if(nums[i] != nums[i - 1]){
+                nums[j++] = nums[i];
+            }
+        }
+        int size = 0;
+        int res = n;
+        for(int i = 0; i < j; i++){
+            while(nums[i - size] < nums[i] - n + 1){
+                size--;
+            }
+            size++;
+            res = Math.min(res, n - size);
+        }
+        return res;
+    }
+
+
+    // LC 1702
+    public static String maximumBinaryString(String binary) {
+        int n = binary.length();
+        int i = binary.indexOf('0');
+        if(i < 0){
+            return binary;
+        }
+        int ct = 0; //1的个数
+        for(i++; i < n; i++){
+            if(binary.charAt(i) == '1'){
+                ct++;
+            }
+        }
+        return "1".repeat(n - 1 - ct) + "0" + "1".repeat(ct);
+    }
+
+
+    // LC 2924
+    public int findChampion(int n, int[][] edges) {
+        HashSet<Integer> set = new HashSet<>();
+        for(int i = 0; i < n; i++){
+            set.add(i);
+        }
+        for(int[] edge: edges){
+            set.remove(edge[1]);
+        }
+        return set.size() == 1 ? (int)set.toArray()[0] : -1;
+    }
+
+    public static int[] findOriginalArray(int[] changed) {
+        int n = changed.length;
+        if((n & 1) == 1){
+            return new int[0];
+        }
+        Arrays.sort(changed);
+        int[] count = new int[changed[n-1] + 1];
+        for(int i = 0; i < n; i++){
+            count[changed[i]]++;
+        }
+        int j = 0;
+        int[] original = new int[n/2];
+        for(int i = 0; i < n; i++){
+            while(count[changed[i]] > 0){
+                if(changed[i] * 2 >= count.length || count[changed[i] * 2] == 0){
+                    return new int[0];
+                }
+                count[changed[i]]--;
+                count[changed[i]*2]--;
+                original[j++] = changed[i];
+            }
+        }
+        return original;
+    }
+
+    // LC 216
+    public static List<List<Integer>> combinationSum3(int k, int n) {
+        List<List<Integer>> res = new ArrayList<>();
+        List<Integer> cur = new ArrayList<>();
+        dfs(1, k, n, cur, res);
+        return res;
+    }
+    // 来到i位置，还要选k个数，剩下target
+    public static void dfs(int i, int k, int target, List<Integer> cur, List<List<Integer>> res){
+        if(i > 10 || k < 0){
+            return;
+        }
+        if(cur.size() == 8){
+            System.out.println("now");
+        }
+        if(target == 0 && k == 0){
+            res.add(new ArrayList<>(cur));
+            return;
+        }
+        // 不选
+        dfs(i + 1, k, target, cur, res);
+        // 选
+        cur.add(i);
+        dfs(i + 1, k - 1, target - i, cur, res);
+        cur.remove(cur.size() - 1);
+    }
+
+    // LC1673
+    public int[] mostCompetitive(int[] nums, int k) {
+        winner = new int[k];
+        Arrays.fill(winner, Integer.MAX_VALUE);
+        int[] sub = new int[k];
+        fn(nums, nums.length, 0, 0, k, sub);
+        return winner;
+
+    }
+
+    int[] winner;
+    // 来到nums的i位置选不选它作为子序列的第j个数
+    public void fn(int[] nums, int n, int i, int j, int k, int[] sub){
+        if(i == n && j < k){
+            return;
+        }
+        if(j == k){
+            if(compete(sub, winner)){
+                winner = sub.clone();
+            }
+            return;
+        }
+        // 选i
+        sub[j] = nums[i];
+        fn(nums, n, i + 1, j + 1, k, sub);
+        // 不选
+        fn(nums, n, i + 1, j, k, sub);
+    }
+    
+    // 比较两个数组谁有竞争力
+    public boolean compete(int[] arr1, int[] arr2){
+        int n = arr1.length;
+        for(int i = 0; i < n; i++){
+            if(arr1[i] < arr2[i]){
+                return true;
+            }else if(arr1[i] > arr2[i]){
+                return false;
+            }
+        }
+        return true;
+    }
+    public void LC1673(){
+        int[] nums = {70,3,34,32,18,67,51,79,44,69,16,0,20,89,43,4,13,22,62,54,61,64,18,53,98,84,48,17,73};
+        int[] res = mostCompetitive(nums, 26);
+        for (int i = 0; i < res.length; i++) {
+            System.out.print(res[i] + "\t");
+        }
+    }
+
+    // LC 1738
+    public int kthLargestValue(int[][] matrix, int k) {
+        PriorityQueue<Integer> heap = new PriorityQueue<>();
+        int cur = 0;
+        int[] lastLine = new int[matrix[0].length];
+        for(int i = 0; i < matrix.length; i++){
+            cur = 0;
+            for(int j = 0; j < matrix[0].length; j++){
+                cur ^= matrix[i][j];
+                lastLine[j] = lastLine[j] ^ cur;
+                if(heap.size() < k){
+                    heap.add(lastLine[j]);
+                }else if(heap.peek() < lastLine[j]){
+                    heap.poll();
+                    heap.add(lastLine[j]);
+                }
+            }
+        }
+        return heap.peek();
+    }
+
+    // LC 2028
+    public int[] missingRolls(int[] rolls, int mean, int n) {
+        int total = mean * (rolls.length + n);
+        for (int i = 0; i < rolls.length; i++) {
+            total -= rolls[i];
+        }
+        if(total < n || total > 6 * n){
+            return new int[0];
+        }
+        int avg = total / n;
+        int rest = total % n;
+        int[] res = new int[n];
+        Arrays.fill(res, 0, rest, avg + 1);
+        Arrays.fill(res, rest, n, avg);
+        return res;
+    }
+
+    // LC 419
+    public int countBattleships(char[][] board) {
+        int m = board.length;
+        int n = board[0].length;
+        // 记录是否访问过这个点
+        int[][] visited = new int[m][n];
+        int res = 0;
+        for(int i = 0; i < m; i++){
+            for(int j = 0; j < n; j++){
+                if(visited[i][j] == 1){ //访问过，跳过
+                    continue;
+                }
+                // 没访问过
+                // 如果是.，记录
+                if(board[i][j] == '.'){
+                    visited[i][j] = 1;
+                }else{  // 如果是x，深度优先遍历
+                    dfs(i, j, board, visited);
+                    res++;
+                }
+            }
+        }
+        return res;
+    }
+    
+    // 只需向右或向下遍历
+    private void dfs(int i, int j, char[][] board, int[][] visited){
+        int ii = i;
+        int jj = j;
+        while(ii < board.length && board[ii][j] == 'X'){
+            visited[ii++][j] = 1;
+        }
+        while(jj < board[0].length && board[i][jj] == 'X'){
+            visited[i][jj++] = 1;
+        }
+    }
+
+    // LC 881
+    public int numRescueBoats(int[] people, int limit) {
+        Arrays.sort(people);
+        int res = 0;
+        int n = people.length;
+        int l = 0;
+        int r = n - 1;
+        while(l < r){
+            while(r > l && people[l] + people[r] > limit){
+                r--;
+                res++;
+            }
+            l++;
+            r--;
+            res++;
+        }
+        return res;
+    }
+
+
+    public String discountPrices(String sentence, int discount) {
+        String[] words = sentence.split(" ");
+        StringBuilder res = new StringBuilder();
+        for (String word : words) {
+            res.append(" ");
+            if(word.length() > 1 && word.charAt(0) == '$'){
+                Long price = null;
+                try{
+                    price = Long.valueOf(word.substring(1, word.length()));
+                }catch(Exception e){}
+                if(price != null){
+                    res.append("$");
+                    res.append(String.format("%.2f", (1.0 * price * (100 - discount) / 100)));
+                }else{
+                    res.append(word);
+                }
+            }else{
+                res.append(word);
+            }
+        }
+        return res.substring(1, res.length());
+    }
+
+
+    // LCP 61
+    public int temperatureTrend(int[] temperatureA, int[] temperatureB) {
+        int res = 0;
+        int same = 0;
+        int n = temperatureA.length;
+        for (int i = 1; i < n; i++) {
+            if(Integer.compare(temperatureA[i], temperatureA[i - 1]) == Integer.compare(temperatureB[i], temperatureB[i - 1])){
+                res = Math.max(res, ++same);
+            }else{
+                same = 0;
+            }
+        }
+        return res;
+    }
+
+    // LC 2742
+    public int paintWalls(int[] cost, int[] time) {
+        int n = cost.length;
+        int[][] arr = new int[n][2];
+        for (int i = 0; i < n; i++) {
+            arr[i][0] = time[i];
+            arr[i][1] = cost[i];
+        }
+        Arrays.sort(arr, new Comparator<int[]>() { //按时间降序排序，时间相同的按花费升序排序
+            @Override
+            public int compare(int[] a, int[] b){
+                if(a[0] == b[0]){
+                    return a[1] - b[1];
+                }else{
+                    return b[0] - a[0];
+                }
+            }
+        });
+
+        int i = 0;
+        int res = 0;
+        int timeA = 0; //
+        while(arr[i][0] > 1){
+            res += arr[i][1];
+            timeA += arr[i][0];
+            i++;
+        }
+        int j = n - 1;
+        while(i <= j){
+            while(i <= j && timeA > 0){
+                j--;
+                timeA--;
+            }
+            if(i <= j){
+                res += arr[i][1];
+                timeA++;
+                i++;
+            }
+        }
+        return res;
     }
 
 
